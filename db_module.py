@@ -5,6 +5,7 @@ class MyDatabase:
 	def __init__(self, database):
 		self.conn = sqlite3.connect(database)
 		self.c = self.conn.cursor()
+
 		# các loại từ
 		self.pos = [
 		('Aa', 'Quality Adjectives'),
@@ -129,9 +130,18 @@ class MyDatabase:
 		for row in similar_db.c.fetchall():
 			self.c.execute('INSERT OR IGNORE INTO word_ne(word, ne_id) VALUES(:word, :ne_id)', {'word': row[0], 'ne_id': row[1]})
 
+	def get_pos(self):
+		self.c.execute('SELECT pos_name, pos_description FROM pos')
+		return self.c.fetchall()
+
+	def get_word_pos(self):
+		self.c.execute('SELECT word, pos_name FROM word_pos JOIN pos ON word_pos.pos_id = pos.id')
+		return self.c.fetchall()
 
 
 
+
+# test database
 def main():
 	db_1 = MyDatabase(':memory:')
 	db_1.create_table()
