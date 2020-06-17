@@ -134,8 +134,16 @@ class MyDatabase:
 		self.c.execute('SELECT pos_name, pos_description FROM pos')
 		return self.c.fetchall()
 
+	def get_ne(self):
+		self.c.execute('SELECT ne_name, ne_description FROM ne')
+		return self.c.fetchall()
+
 	def get_word_pos(self):
 		self.c.execute('SELECT word, pos_name FROM word_pos JOIN pos ON word_pos.pos_id = pos.id')
+		return self.c.fetchall()
+
+	def get_word_ne(self):
+		self.c.execute('SELECT word, ne_name FROM word_ne JOIN ne ON word_ne.ne_id = ne.id')
 		return self.c.fetchall()
 
 	def update_word_pos(self, word, pos, new_word, new_pos):
@@ -156,12 +164,35 @@ class MyDatabase:
 					'new_pos_id': new_pos_id
 				})
 
+	def update_word_ne(self, word, ne, new_word, new_ne):
+		with self.conn:
+			self.c.execute('SELECT id FROM ne WHERE ne_name=:ne_name', {'ne_name': ne})
+			ne_id = self.c.fetchone()[0]
+			self.c.execute('SELECT id FROM ne WHERE ne_name=:ne_name', {'ne_name': new_ne})
+			new_ne_id = self.c.fetchone()[0]
+			self.c.execute('''
+				UPDATE word_ne
+				SET word=:new_word, ne_id=:new_ne_id
+				WHERE word=:word AND ne_id=:ne_id
+				''',
+				{
+					'word': word,
+					'ne_id': ne_id,
+					'new_word': new_word,
+					'new_ne_id': new_ne_id
+				})
+
 	def delete_word_pos(self, word, pos):
 		with self.conn:			
 			self.c.execute('SELECT id FROM pos WHERE pos_name=:pos_name', {'pos_name': pos})
 			pos_id = self.c.fetchone()[0]
 			self.c.execute('DELETE FROM word_pos WHERE word=:word AND pos_id=:pos_id', {'word': word, 'pos_id': pos_id})
 
+	def delete_word_ne(self, word, ne):
+		with self.conn:
+			self.c.execute('SELECT id FROM ne WHERE ne_name=:ne_name', {'ne_name': ne})
+			ne_id = self.c.fetchone()[0]
+			self.c.execute('DELETE FROM word_ne WHERE word=:word AND ne_id=:ne_id', {'word': word, 'ne_id': ne_id})
 
 
 
