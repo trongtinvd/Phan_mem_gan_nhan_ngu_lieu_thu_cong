@@ -138,6 +138,30 @@ class MyDatabase:
 		self.c.execute('SELECT word, pos_name FROM word_pos JOIN pos ON word_pos.pos_id = pos.id')
 		return self.c.fetchall()
 
+	def update_word_pos(self, word, pos, new_word, new_pos):
+		with self.conn:
+			self.c.execute('SELECT id FROM pos WHERE pos_name=:pos_name', {'pos_name': pos})
+			pos_id = self.c.fetchone()[0]
+			self.c.execute('SELECT id FROM pos WHERE pos_name=:pos_name', {'pos_name': new_pos})
+			new_pos_id = self.c.fetchone()[0]
+			self.c.execute('''
+				UPDATE word_pos
+				SET word=:new_word, pos_id=:new_pos_id
+				WHERE word=:word AND pos_id=:pos_id
+				''',
+				{
+					'word': word,
+					'pos_id': pos_id,
+					'new_word': new_word,
+					'new_pos_id': new_pos_id
+				})
+
+	def delete_word_pos(self, word, pos):
+		with self.conn:			
+			self.c.execute('SELECT id FROM pos WHERE pos_name=:pos_name', {'pos_name': pos})
+			pos_id = self.c.fetchone()[0]
+			self.c.execute('DELETE FROM word_pos WHERE word=:word AND pos_id=:pos_id', {'word': word, 'pos_id': pos_id})
+
 
 
 
